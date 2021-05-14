@@ -17,6 +17,7 @@ all:
 	cd shared_bw && 		make &&	cp shared_bw $(BIN_DIR)
 	cd shared_lat && 		make &&	cp shared_lat $(BIN_DIR)
 	cd MaxFlops && 		make &&	cp MaxFlops $(BIN_DIR)
+	cd MaxFlops_polluted && 		make &&	cp MaxFlops_polluted $(BIN_DIR)
 	cd l1_shared_bw && 		make &&	cp l1_shared_bw $(BIN_DIR)
 	cd l1_bw_32f_unroll && 		make &&	cp l1_bw_32f_unroll $(BIN_DIR)
 	cd l1_bw_32f_unroll_large && 		make &&	cp l1_bw_32f_unroll_large $(BIN_DIR)

@@ -2,7 +2,7 @@
 #include <stdlib.h> 
 #include <cuda.h>
 
-#define THREADS_PER_BLOCK 256
+#define THREADS_PER_BLOCK 1024
 #define THREADS_PER_SM 256
 #define BLOCKS_NUM 1
 #define TOTAL_THREADS (THREADS_PER_BLOCK*BLOCKS_NUM)
@@ -20,8 +20,10 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
 
 
 template <class T>
-__global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *data2, T *res) {
+__global__ void max_flops_polluted(uint32_t *startClk, uint32_t *stopClk, T *data1, T *data2, T *res) {
 	int gid = blockIdx.x*blockDim.x + threadIdx.x;
+	int warp_id = threadIdx.x / WARP_SIZE;
+	bool is_not_dummy = ((warp_id % 4) == 0);
 	register T s1 = data1[gid];
 	register T s2 = data2[gid];
 	register T result = 0;
@@ -31,20 +33,21 @@ __global__ void max_flops(uint32_t *startClk, uint32_t *stopClk, T *data1, T *da
 
 	// start timing
 	uint32_t start = 0;
-	asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
-
-	for (int j=0 ; j<REPEAT_TIMES ; ++j) {
-		asm volatile ("{\t\n"
-				"fma.rn.f32 %0, %1, %2 , %0;\n\t"
-				"fma.rn.f32 %0, %1, %2 , %0;\n\t"
-				"fma.rn.f32 %0, %1, %2 , %0;\n\t"
-				"fma.rn.f32 %0, %1, %2 , %0;\n\t"
-				"}" : "+f"(result),"+f"(s1),"+f"(s2)
-		);
-
-
-
+	if (is_not_dummy) {
+		asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
+		for (int j=0 ; j<REPEAT_TIMES ; ++j) {
+			asm volatile ("{\t\n"
+					"fma.rn.f32 %0, %1, %2 , %0;\n\t"
+					"fma.rn.f32 %0, %1, %2 , %0;\n\t"
+					"fma.rn.f32 %0, %1, %2 , %0;\n\t"
+					"fma.rn.f32 %0, %1, %2 , %0;\n\t"
+					"}" : "+f"(result),"+f"(s1),"+f"(s2)
+			);
+		}
+	} else {
+		asm volatile ("mov.u32 %0, %%clock;" : "=r"(start) :: "memory");
 	}
+	
 	// synchronize all threads
 	asm volatile("bar.sync 0;");
 
@@ -85,7 +88,7 @@ int main(){
 	gpuErrchk( cudaMemcpy(data1_g, data1, TOTAL_THREADS*sizeof(float), cudaMemcpyHostToDevice) );
 	gpuErrchk( cudaMemcpy(data2_g, data2, TOTAL_THREADS*sizeof(float), cudaMemcpyHostToDevice) );
 
-	max_flops<float><<<BLOCKS_NUM,THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, data1_g, data2_g, res_g);
+	max_flops_polluted<float><<<BLOCKS_NUM,THREADS_PER_BLOCK>>>(startClk_g, stopClk_g, data1_g, data2_g, res_g);
 	gpuErrchk( cudaPeekAtLastError() );
 
 	gpuErrchk( cudaMemcpy(startClk, startClk_g, TOTAL_THREADS*sizeof(uint32_t), cudaMemcpyDeviceToHost) );
