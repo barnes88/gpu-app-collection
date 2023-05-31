@@ -9,3 +9,9 @@ if [ ! -d $DATA_ROOT ]; then
 	fi
     tar xzvf all.gpgpu-sim-app-data.tgz -C $BASH_ROOT
 fi
+
+if [ ! -f $DATA_ROOT/ggnn/sift.tar.gz ]; then
+		wget -P $DATA_ROOT/ggnn/ ftp://ftp.irisa.fr/local/texmex/corpus/sift.tar.gz
+	fi
+tar xzvf $DATA_ROOT/ggnn/sift.tar.gz -C $DATA_ROOT/ggnn/
+rm $DATA_ROOT/ggnn/sift.tar.gz
