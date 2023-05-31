@@ -439,7 +439,11 @@ ggnn:
 	if [ ! -d "ggnn" ]; then \
 		git clone --recursive git@github.com:cgtuebingen/ggnn.git; \
 	fi && \
-	$(SETENV) mkdir -p ggnn/build && cd ggnn/build && cmake .. && make
+	$(SETENV) mkdir -p ggnn/build && cd ggnn/build && cmake .. && make && \
+	cp sift* $(BINDIR)/$(BINSUBDIR)/ && \
+	cp nytimes* $(BINDIR)/$(BINSUBDIR)/ && \
+	cp deep1b_multi $(BINDIR)/$(BINSUBDIR)/ && \
+	cp glove200 $(BINDIR)/$(BINSUBDIR)/
 
 # Maybe we should use submodules for this - but I have heard a lot of horor stories about these..
 # For now - lets just clone if we don't have it and set the SHA we want.
