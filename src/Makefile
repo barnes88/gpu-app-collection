@@ -437,13 +437,10 @@ ggnn:
 	mkdir -p $(BINDIR)/$(BINSUBDIR)/
 	cd cuda && \
 	if [ ! -d "ggnn" ]; then \
-		git clone --recursive git@github.com:cgtuebingen/ggnn.git; \
+		git clone -b accel-sim --recursive git@github.com:barnes88/ggnn.git; \
 	fi && \
 	$(SETENV) mkdir -p ggnn/build && cd ggnn/build && cmake .. && make && \
-	cp sift* $(BINDIR)/$(BINSUBDIR)/ && \
-	cp nytimes* $(BINDIR)/$(BINSUBDIR)/ && \
-	cp deep1b_multi $(BINDIR)/$(BINSUBDIR)/ && \
-	cp glove200 $(BINDIR)/$(BINSUBDIR)/
+	cp sift* $(BINDIR)/$(BINSUBDIR)/
 
 # Maybe we should use submodules for this - but I have heard a lot of horor stories about these..
 # For now - lets just clone if we don't have it and set the SHA we want.
@@ -493,6 +490,7 @@ mlperf_training:
 
 clean_ggnn:
 	rm -rf cuda/ggnn
+	rm $(BINDIR)/$(BINSUBDIR)/sift*
 
 clean_heterosync:
 	rm -rf cuda/heterosync

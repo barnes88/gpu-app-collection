@@ -15,3 +15,9 @@ if [ ! -f $DATA_ROOT/ggnn/sift.tar.gz ]; then
 	fi
 tar xzvf $DATA_ROOT/ggnn/sift.tar.gz -C $DATA_ROOT/ggnn/
 rm $DATA_ROOT/ggnn/sift.tar.gz
+
+if [ ! -f $DATA_ROOT/ggnn/siftsmall.tar.gz ]; then
+		wget -P $DATA_ROOT/ggnn/ ftp://ftp.irisa.fr/local/texmex/corpus/siftsmall.tar.gz
+	fi
+tar xzvf $DATA_ROOT/ggnn/siftsmall.tar.gz -C $DATA_ROOT/ggnn/
+rm $DATA_ROOT/ggnn/siftsmall.tar.gz
